@@ -15,8 +15,17 @@ pub fn main() -> iced::Result {
     })
 }
 
-#[derive(Default)]
-struct PhoneBook;
+struct PhoneBook {
+    phone_book_data: BTreeMap<String, PhoneEntry>,
+}
+
+impl Default for PhoneBook {
+    fn default() -> Self {
+        PhoneBook {
+            phone_book_data: a_map(),
+        }
+    }
+}
 
 #[derive(Debug, Clone, Copy)]
 enum Message {
@@ -75,8 +84,6 @@ impl Application for PhoneBook {
     }
 
     fn view(&self) -> iced::Element<'_, Self::Message, Self::Theme, iced::Renderer> {
-        let data_map = a_map();
-
         let phone_numbers_grid = Grid::new();
 
         let header = GridRow::new()
@@ -85,11 +92,11 @@ impl Application for PhoneBook {
             .push(text("Work"));
         let mut phone_numbers_grid = phone_numbers_grid.push(header);
 
-        for entry in data_map {
+        for entry in self.phone_book_data.iter() {
             let entry1 = GridRow::new()
-                .push(Text::new(entry.0 + "    "))
-                .push(text(entry.1.mobile + "    "))
-                .push(text(entry.1.work));
+                .push(Text::new(entry.0.clone() + "    "))
+                .push(text(entry.1.mobile.clone() + "    "))
+                .push(text(entry.1.work.clone()));
             phone_numbers_grid = phone_numbers_grid.push(entry1);
         }
 
