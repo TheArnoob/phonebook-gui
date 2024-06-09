@@ -1,10 +1,9 @@
-use std::collections::BTreeMap;
-
+use database::PhoneBookDB;
 use entry::PhoneEntry;
 use iced::widget::{button, row, text, Column, Text};
-use iced::{executor, Alignment, Application, Command, Settings, Theme};
+use iced::{executor, Alignment, Application, Color, Command, Settings, Theme};
 use iced_aw::{Grid, GridRow};
-
+use std::collections::BTreeMap;
 mod database;
 mod entry;
 
@@ -17,12 +16,14 @@ pub fn main() -> iced::Result {
 
 struct PhoneBook {
     phone_book_data: BTreeMap<String, PhoneEntry>,
+    error_state: String,
 }
 
 impl Default for PhoneBook {
     fn default() -> Self {
         PhoneBook {
             phone_book_data: a_map(),
+            error_state: String::new(),
         }
     }
 }
@@ -38,22 +39,22 @@ fn a_map() -> BTreeMap<String, PhoneEntry> {
     map.insert(
         "Jack".to_string(),
         PhoneEntry {
-            mobile: "0504131252".to_string(),
-            work: "0204432224".to_string(),
+            mobile: 0504131252.to_string(),
+            work: 0204432224.to_string(),
         },
     );
     map.insert(
         "Mark".to_string(),
         PhoneEntry {
-            mobile: "0504327583".to_string(),
-            work: "0203344555".to_string(),
+            mobile: 0504327583.to_string(),
+            work: 0203344555.to_string(),
         },
     );
     map.insert(
         "Marry".to_string(),
         PhoneEntry {
-            mobile: "0203344555".to_string(),
-            work: "0504131252".to_string(),
+            mobile: 0503344555.to_string(),
+            work: 0204131252.to_string(),
         },
     );
     map
@@ -79,7 +80,30 @@ impl Application for PhoneBook {
     fn update(&mut self, message: Self::Message) -> iced::Command<Self::Message> {
         match message {
             Message::SavePhonebook => Command::none(),
-            Message::LoadPhonebook => Command::none(),
+            Message::LoadPhonebook => {
+                let fd = rfd::FileDialog::new();
+                let filename = fd.pick_file();
+
+                let phone_book_db = match filename {
+                    Some(f) => PhoneBookDB { file_path1: f },
+                    None => return Command::none(),
+                };
+
+                let data_map = phone_book_db.read();
+
+                let data_map1 = match data_map {
+                    Ok(data) => data,
+                    Err(err) => {
+                        self.error_state = format!("Failed to open file: {err}");
+                        return Command::none();
+                    }
+                };
+
+                self.phone_book_data = data_map1;
+                self.error_state = String::new();
+
+                Command::none()
+            }
         }
     }
 
@@ -107,7 +131,9 @@ impl Application for PhoneBook {
         ]
         .padding(20)
         .align_items(Alignment::Center);
+        let error_state_field = Text::new(&self.error_state).style(Color::from_rgb8(255, 0, 0));
         let c = c.push(buttons_row);
+        let c = c.push(error_state_field);
         let c = c.push(phone_numbers_grid);
         c.into()
     }

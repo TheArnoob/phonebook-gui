@@ -1,13 +1,13 @@
 use crate::entry::PhoneEntry;
 use std::{collections::BTreeMap, fs::read, io::Write, path::PathBuf};
 
-pub struct _PhoneBookDB {
-    file_path1: PathBuf,
+pub struct PhoneBookDB {
+    pub file_path1: PathBuf,
 }
 
-impl _PhoneBookDB {
-    pub fn _new(file_path: std::path::PathBuf) -> _PhoneBookDB {
-        _PhoneBookDB {
+impl PhoneBookDB {
+    pub fn _new(file_path: std::path::PathBuf) -> PhoneBookDB {
+        PhoneBookDB {
             file_path1: file_path,
         }
     }
@@ -31,7 +31,7 @@ impl _PhoneBookDB {
         Ok(())
     }
 
-    pub fn _read(&self) -> Result<BTreeMap<String, PhoneEntry>, Box<dyn std::error::Error>> {
+    pub fn read(&self) -> Result<BTreeMap<String, PhoneEntry>, Box<dyn std::error::Error>> {
         if !self.file_path1.exists() {
             return Ok(BTreeMap::new());
         }
@@ -45,6 +45,10 @@ impl _PhoneBookDB {
                 continue;
             }
             let word_split: Vec<&str> = word.split(": ").collect();
+            if word_split.len() < 3 {
+                let e: Box<dyn std::error::Error> = String::from("Invalid file").into();
+                return Err(e);
+            }
             phone_book.insert(
                 word_split[0].to_string(),
                 PhoneEntry {
@@ -61,21 +65,21 @@ impl _PhoneBookDB {
 mod tests {
     use std::collections::BTreeMap;
 
-    use crate::{database::_PhoneBookDB, entry::PhoneEntry};
+    use crate::{database::PhoneBookDB, entry::PhoneEntry};
 
     #[test]
     fn read_in_file() {
         let file_path = "test_file.txt";
-        let phone_book = _PhoneBookDB::_new(file_path.into());
-        let data = phone_book._read().unwrap();
+        let phone_book = PhoneBookDB::_new(file_path.into());
+        let data = phone_book.read().unwrap();
         assert_eq!(data.is_empty(), true)
     }
 
     #[test]
     fn write_in_file() {
         let file_path = "text_file1.txt";
-        let phone_book = _PhoneBookDB::_new(file_path.into());
-        let data = phone_book._read().unwrap();
+        let phone_book = PhoneBookDB::_new(file_path.into());
+        let data = phone_book.read().unwrap();
         assert_eq!(data.is_empty(), true);
         let mut map = BTreeMap::new();
         map.insert(
@@ -86,7 +90,7 @@ mod tests {
             },
         );
         phone_book._write(&map).unwrap();
-        let data1 = phone_book._read().unwrap();
+        let data1 = phone_book.read().unwrap();
         assert_eq!(data1.contains_key("cat"), true);
         let entry = data1.get("cat").unwrap();
         assert_eq!(
@@ -107,12 +111,12 @@ mod tests {
         if std::path::PathBuf::from(file_path).exists() {
             std::fs::remove_file(file_path).unwrap();
         }
-        let phone_book = _PhoneBookDB::_new(file_path.into());
+        let phone_book = PhoneBookDB::_new(file_path.into());
         // Make a new map.
         let mut map = BTreeMap::new();
         // read the phone book database.
         let data = phone_book
-            ._read()
+            .read()
             .expect("Cannot read the data from the file.");
         // Assert that there is no data read.
         assert_eq!(data.is_empty(), true);
@@ -130,7 +134,7 @@ mod tests {
         phone_book._write(&map).expect("Cannot write the map.");
         // read the data
         let data1 = phone_book
-            ._read()
+            .read()
             .expect("Cannot read the data from the file.");
         // Assert that there is no data read.
         assert_eq!(data1.is_empty(), true);
