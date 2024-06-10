@@ -12,7 +12,7 @@ impl PhoneBookDB {
         }
     }
 
-    pub fn _write(
+    pub fn write(
         &self,
         phone_book: &BTreeMap<String, PhoneEntry>,
     ) -> Result<(), Box<dyn std::error::Error>> {
@@ -89,7 +89,7 @@ mod tests {
                 work: "1".to_string(),
             },
         );
-        phone_book._write(&map).unwrap();
+        phone_book.write(&map).unwrap();
         let data1 = phone_book.read().unwrap();
         assert_eq!(data1.contains_key("cat"), true);
         let entry = data1.get("cat").unwrap();
@@ -127,11 +127,11 @@ mod tests {
                 work: "05043434332".to_string(),
             },
         );
-        phone_book._write(&map).expect("Cannot write the map");
+        phone_book.write(&map).expect("Cannot write the map");
         map.remove_entry(&"Arnold".to_string());
         // Assert that there is no data read.
         assert_eq!(map.is_empty(), true);
-        phone_book._write(&map).expect("Cannot write the map.");
+        phone_book.write(&map).expect("Cannot write the map.");
         // read the data
         let data1 = phone_book
             .read()

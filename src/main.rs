@@ -79,7 +79,22 @@ impl Application for PhoneBook {
 
     fn update(&mut self, message: Self::Message) -> iced::Command<Self::Message> {
         match message {
-            Message::SavePhonebook => Command::none(),
+            Message::SavePhonebook => {
+                let fd = rfd::FileDialog::new();
+                let file = fd.save_file();
+
+                let phone_book_db = match file {
+                    Some(file) => PhoneBookDB { file_path1: file },
+                    None => return Command::none(),
+                };
+
+                match phone_book_db.write(&self.phone_book_data) {
+                    Ok(_) => (),
+                    Err(e) => self.error_state = format!("Failed to save file: {e}"),
+                }
+
+                Command::none()
+            }
             Message::LoadPhonebook => {
                 let fd = rfd::FileDialog::new();
                 let filename = fd.pick_file();
