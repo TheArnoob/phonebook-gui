@@ -32,6 +32,7 @@ impl Default for PhoneBook {
 enum Message {
     SavePhonebook,
     LoadPhonebook,
+    ClearPhonebook,
 }
 
 fn a_map() -> BTreeMap<String, PhoneEntry> {
@@ -119,6 +120,12 @@ impl Application for PhoneBook {
 
                 Command::none()
             }
+
+            Message::ClearPhonebook => {
+                self.phone_book_data.clear();
+
+                Command::none()
+            }
         }
     }
 
@@ -126,8 +133,8 @@ impl Application for PhoneBook {
         let phone_numbers_grid = Grid::new();
 
         let header = GridRow::new()
-            .push(Text::new("Name"))
-            .push(text("Mobile"))
+            .push(Text::new("Name  "))
+            .push(text("Mobile  "))
             .push(text("Work"));
         let mut phone_numbers_grid = phone_numbers_grid.push(header);
 
@@ -142,7 +149,8 @@ impl Application for PhoneBook {
         let c = Column::new();
         let buttons_row = row![
             button("Save phone book").on_press(Message::SavePhonebook),
-            button("Load phone book").on_press(Message::LoadPhonebook)
+            button("Load phone book").on_press(Message::LoadPhonebook),
+            button("Clear phone book").on_press(Message::ClearPhonebook)
         ]
         .padding(20)
         .align_items(Alignment::Center);
