@@ -130,13 +130,15 @@ impl Application for PhoneBook {
     }
 
     fn view(&self) -> iced::Element<'_, Self::Message, Self::Theme, iced::Renderer> {
-        let phone_numbers_grid = Grid::new();
+        let mut phone_numbers_grid = Grid::new();
 
         let header = GridRow::new()
             .push(Text::new("Name  "))
             .push(text("Mobile  "))
             .push(text("Work"));
-        let mut phone_numbers_grid = phone_numbers_grid.push(header);
+        if !self.phone_book_data.is_empty() {
+            phone_numbers_grid = phone_numbers_grid.push(header);
+        }
 
         for entry in self.phone_book_data.iter() {
             let entry1 = GridRow::new()
