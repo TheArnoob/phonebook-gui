@@ -178,7 +178,7 @@ impl Application for PhoneBook {
         .padding(20)
         .align_items(Alignment::Center);
         let row = row![
-            text_input("name", &self.new_entry_name)
+            text_input("Name", &self.new_entry_name)
                 .on_input(|name| Message::EditNewEntryName(name)),
             text_input("placeholder", "").on_input(|_| Message::NoOp),
             text_input("placeholder", "").on_input(|_| Message::NoOp)
