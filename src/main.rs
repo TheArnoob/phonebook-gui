@@ -19,6 +19,8 @@ struct PhoneBook {
     error_state: String,
     is_adding: bool,
     new_entry_name: String,
+    new_entry_phone_number: String,
+    new_entry_work_number: String,
 }
 
 impl Default for PhoneBook {
@@ -28,6 +30,8 @@ impl Default for PhoneBook {
             error_state: String::new(),
             is_adding: false,
             new_entry_name: String::new(),
+            new_entry_phone_number: String::new(),
+            new_entry_work_number: String::new(),
         }
     }
 }
@@ -38,8 +42,9 @@ enum Message {
     LoadPhonebook,
     ClearPhonebook,
     AddRow,
-    NoOp,
     EditNewEntryName(String),
+    EditNewEntryPhoneNumber(String),
+    EditNewEntryWorkNumber(String),
 }
 
 fn a_map() -> BTreeMap<String, PhoneEntry> {
@@ -140,10 +145,17 @@ impl Application for PhoneBook {
                 Command::none()
             }
 
-            Message::NoOp => Command::none(),
-
             Message::EditNewEntryName(s) => {
                 self.new_entry_name = s;
+                Command::none()
+            }
+            Message::EditNewEntryPhoneNumber(s) => {
+                self.new_entry_phone_number = s;
+                Command::none()
+            }
+
+            Message::EditNewEntryWorkNumber(s) => {
+                self.new_entry_work_number = s;
                 Command::none()
             }
         }
@@ -180,8 +192,10 @@ impl Application for PhoneBook {
         let row = row![
             text_input("Name", &self.new_entry_name)
                 .on_input(|name| Message::EditNewEntryName(name)),
-            text_input("placeholder", "").on_input(|_| Message::NoOp),
-            text_input("placeholder", "").on_input(|_| Message::NoOp)
+            text_input("Phone number", &self.new_entry_phone_number)
+                .on_input(|phone_number| Message::EditNewEntryPhoneNumber(phone_number)),
+            text_input("Work number", &self.new_entry_work_number)
+                .on_input(|work_number| Message::EditNewEntryWorkNumber(work_number))
         ]
         .padding(20)
         .align_items(Alignment::Center);
