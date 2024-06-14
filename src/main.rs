@@ -1,6 +1,6 @@
 use database::PhoneBookDB;
 use entry::PhoneEntry;
-use iced::widget::{button, row, text, Column, Text};
+use iced::widget::{button, row, text, text_input, Column, Text};
 use iced::{executor, Alignment, Application, Color, Command, Settings, Theme};
 use iced_aw::{Grid, GridRow};
 use std::collections::BTreeMap;
@@ -17,6 +17,8 @@ pub fn main() -> iced::Result {
 struct PhoneBook {
     phone_book_data: BTreeMap<String, PhoneEntry>,
     error_state: String,
+    is_adding: bool,
+    new_entry_name: String,
 }
 
 impl Default for PhoneBook {
@@ -24,15 +26,20 @@ impl Default for PhoneBook {
         PhoneBook {
             phone_book_data: a_map(),
             error_state: String::new(),
+            is_adding: false,
+            new_entry_name: String::new(),
         }
     }
 }
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone)]
 enum Message {
     SavePhonebook,
     LoadPhonebook,
     ClearPhonebook,
+    AddRow,
+    NoOp,
+    EditNewEntryName(String),
 }
 
 fn a_map() -> BTreeMap<String, PhoneEntry> {
@@ -126,6 +133,19 @@ impl Application for PhoneBook {
 
                 Command::none()
             }
+
+            Message::AddRow => {
+                self.is_adding = true;
+
+                Command::none()
+            }
+
+            Message::NoOp => Command::none(),
+
+            Message::EditNewEntryName(s) => {
+                self.new_entry_name = s;
+                Command::none()
+            }
         }
     }
 
@@ -152,12 +172,23 @@ impl Application for PhoneBook {
         let buttons_row = row![
             button("Save phone book").on_press(Message::SavePhonebook),
             button("Load phone book").on_press(Message::LoadPhonebook),
-            button("Clear phone book").on_press(Message::ClearPhonebook)
+            button("Clear phone book").on_press(Message::ClearPhonebook),
+            button("Add phone book entry").on_press(Message::AddRow)
         ]
         .padding(20)
         .align_items(Alignment::Center);
+        let row = row![
+            text_input("name", &self.new_entry_name)
+                .on_input(|name| Message::EditNewEntryName(name)),
+            text_input("placeholder", "").on_input(|_| Message::NoOp),
+            text_input("placeholder", "").on_input(|_| Message::NoOp)
+        ]
+        .padding(20)
+        .align_items(Alignment::Center);
+
         let error_state_field = Text::new(&self.error_state).style(Color::from_rgb8(255, 0, 0));
         let c = c.push(buttons_row);
+        let c = c.push(row);
         let c = c.push(error_state_field);
         let c = c.push(phone_numbers_grid);
         c.into()
