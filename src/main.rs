@@ -45,6 +45,8 @@ enum Message {
     EditNewEntryName(String),
     EditNewEntryPhoneNumber(String),
     EditNewEntryWorkNumber(String),
+    Insert,
+    Cancel,
 }
 
 fn a_map() -> BTreeMap<String, PhoneEntry> {
@@ -158,6 +160,17 @@ impl Application for PhoneBook {
                 self.new_entry_work_number = s;
                 Command::none()
             }
+            Message::Insert => {
+                self.phone_book_data.insert(
+                    self.new_entry_name.clone(),
+                    PhoneEntry {
+                        mobile: self.new_entry_phone_number.clone(),
+                        work: self.new_entry_work_number.clone(),
+                    },
+                );
+                Command::none()
+            }
+            Message::Cancel => Command::none(),
         }
     }
 
@@ -195,7 +208,9 @@ impl Application for PhoneBook {
             text_input("Phone number", &self.new_entry_phone_number)
                 .on_input(|phone_number| Message::EditNewEntryPhoneNumber(phone_number)),
             text_input("Work number", &self.new_entry_work_number)
-                .on_input(|work_number| Message::EditNewEntryWorkNumber(work_number))
+                .on_input(|work_number| Message::EditNewEntryWorkNumber(work_number)),
+            button("Insert text").on_press(Message::Insert),
+            button("Cancel").on_press(Message::Cancel)
         ]
         .padding(20)
         .align_items(Alignment::Center);
