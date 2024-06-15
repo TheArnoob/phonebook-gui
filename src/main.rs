@@ -216,10 +216,14 @@ impl Application for PhoneBook {
         .align_items(Alignment::Center);
 
         let error_state_field = Text::new(&self.error_state).style(Color::from_rgb8(255, 0, 0));
-        let c = c.push(buttons_row);
-        let c = c.push(row);
+        let mut c = c.push(buttons_row);
+        if self.is_adding == true {
+            c = c.push(row);
+        }
         let c = c.push(error_state_field);
+
         let c = c.push(phone_numbers_grid);
+
         c.into()
     }
 }
