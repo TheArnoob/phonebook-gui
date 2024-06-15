@@ -170,7 +170,11 @@ impl Application for PhoneBook {
                 );
                 Command::none()
             }
-            Message::Cancel => Command::none(),
+            Message::Cancel => {
+                self.is_adding = false;
+
+                Command::none()
+            }
         }
     }
 
