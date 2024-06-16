@@ -161,13 +161,22 @@ impl Application for PhoneBook {
                 Command::none()
             }
             Message::Insert => {
-                self.phone_book_data.insert(
-                    self.new_entry_name.clone(),
-                    PhoneEntry {
-                        mobile: self.new_entry_phone_number.clone(),
-                        work: self.new_entry_work_number.clone(),
-                    },
-                );
+                if self.phone_book_data.contains_key(&self.new_entry_name) {
+                    self.error_state = String::from("The entry already exists");
+                } else if self.new_entry_name.is_empty() {
+                    self.error_state = String::from("The name is empty.");
+                } else {
+                    self.phone_book_data.insert(
+                        self.new_entry_name.clone(),
+                        PhoneEntry {
+                            mobile: self.new_entry_phone_number.clone(),
+                            work: self.new_entry_work_number.clone(),
+                        },
+                    );
+
+                    self.error_state = String::new();
+                }
+
                 Command::none()
             }
             Message::Cancel => {
