@@ -47,6 +47,7 @@ enum Message {
     EditNewEntryWorkNumber(String),
     Insert,
     Cancel,
+    Remove,
 }
 
 fn a_map() -> BTreeMap<String, PhoneEntry> {
@@ -174,6 +175,12 @@ impl Application for PhoneBook {
                         },
                     );
 
+                    self.is_adding = false;
+
+                    self.new_entry_name.clear();
+                    self.new_entry_phone_number.clear();
+                    self.new_entry_work_number.clear();
+
                     self.error_state = String::new();
                 }
 
@@ -184,6 +191,7 @@ impl Application for PhoneBook {
 
                 Command::none()
             }
+            Message::Remove => Command::none(),
         }
     }
 
@@ -202,7 +210,8 @@ impl Application for PhoneBook {
             let entry1 = GridRow::new()
                 .push(Text::new(entry.0.clone() + "    "))
                 .push(text(entry.1.mobile.clone() + "    "))
-                .push(text(entry.1.work.clone()));
+                .push(text(entry.1.work.clone()))
+                .push(row![button("Remove entry").on_press(Message::Remove),]);
             phone_numbers_grid = phone_numbers_grid.push(entry1);
         }
 
@@ -222,7 +231,7 @@ impl Application for PhoneBook {
                 .on_input(|phone_number| Message::EditNewEntryPhoneNumber(phone_number)),
             text_input("Work number", &self.new_entry_work_number)
                 .on_input(|work_number| Message::EditNewEntryWorkNumber(work_number)),
-            button("Insert text").on_press(Message::Insert),
+            button("Add entry").on_press(Message::Insert),
             button("Cancel").on_press(Message::Cancel)
         ]
         .padding(20)
