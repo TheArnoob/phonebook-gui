@@ -47,7 +47,7 @@ enum Message {
     EditNewEntryWorkNumber(String),
     Insert,
     Cancel,
-    Remove,
+    Remove(String),
 }
 
 fn a_map() -> BTreeMap<String, PhoneEntry> {
@@ -191,7 +191,12 @@ impl Application for PhoneBook {
 
                 Command::none()
             }
-            Message::Remove => Command::none(),
+            Message::Remove(name) => {
+                self.phone_book_data
+                    .remove_entry(&name)
+                    .expect("Name must exist");
+                Command::none()
+            }
         }
     }
 
@@ -211,7 +216,9 @@ impl Application for PhoneBook {
                 .push(Text::new(entry.0.clone() + "    "))
                 .push(text(entry.1.mobile.clone() + "    "))
                 .push(text(entry.1.work.clone()))
-                .push(row![button("Remove entry").on_press(Message::Remove),]);
+                .push(row![
+                    button("Remove entry").on_press(Message::Remove(entry.0.clone())),
+                ]);
             phone_numbers_grid = phone_numbers_grid.push(entry1);
         }
 
