@@ -26,7 +26,7 @@ struct PhoneBook {
 impl Default for PhoneBook {
     fn default() -> Self {
         PhoneBook {
-            phone_book_data: a_map(),
+            phone_book_data: BTreeMap::new(),
             error_state: String::new(),
             is_adding: false,
             new_entry_name: String::new(),
@@ -48,32 +48,6 @@ enum Message {
     Insert,
     Cancel,
     Remove(String),
-}
-
-fn a_map() -> BTreeMap<String, PhoneEntry> {
-    let mut map = BTreeMap::new();
-    map.insert(
-        "Jack".to_string(),
-        PhoneEntry {
-            mobile: 0504131252.to_string(),
-            work: 0204432224.to_string(),
-        },
-    );
-    map.insert(
-        "Mark".to_string(),
-        PhoneEntry {
-            mobile: 0504327583.to_string(),
-            work: 0203344555.to_string(),
-        },
-    );
-    map.insert(
-        "Marry".to_string(),
-        PhoneEntry {
-            mobile: 0503344555.to_string(),
-            work: 0204131252.to_string(),
-        },
-    );
-    map
 }
 
 impl Application for PhoneBook {
