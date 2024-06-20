@@ -18,6 +18,8 @@ struct PhoneBook {
     phone_book_data: BTreeMap<String, PhoneEntry>,
     error_state: String,
     is_adding: bool,
+    is_modifying: bool,
+    name_to_be_modified: String,
     new_entry_name: String,
     new_entry_phone_number: String,
     new_entry_work_number: String,
@@ -29,6 +31,8 @@ impl Default for PhoneBook {
             phone_book_data: BTreeMap::new(),
             error_state: String::new(),
             is_adding: false,
+            is_modifying: false,
+            name_to_be_modified: String::new(),
             new_entry_name: String::new(),
             new_entry_phone_number: String::new(),
             new_entry_work_number: String::new(),
@@ -38,16 +42,18 @@ impl Default for PhoneBook {
 
 #[derive(Debug, Clone)]
 enum Message {
-    SavePhonebook,
-    LoadPhonebook,
-    ClearPhonebook,
     AddRow,
-    EditNewEntryName(String),
-    EditNewEntryPhoneNumber(String),
-    EditNewEntryWorkNumber(String),
-    Insert,
     Cancel,
+    ClearPhonebook,
+    EditNewEntryName(String),
+    EditNewEntryWorkNumber(String),
+    EditNewEntryPhoneNumber(String),
+    Insert,
+    LoadPhonebook,
+    Modify(String),
     Remove(String),
+    SavePhonebook,
+    NoOp,
 }
 
 impl Application for PhoneBook {
@@ -171,6 +177,14 @@ impl Application for PhoneBook {
                     .expect("Name must exist");
                 Command::none()
             }
+
+            Message::Modify(name) => {
+                self.is_modifying = true;
+                self.name_to_be_modified = name;
+                Command::none()
+            }
+
+            Message::NoOp => Command::none(),
         }
     }
 
@@ -186,13 +200,28 @@ impl Application for PhoneBook {
         }
 
         for entry in self.phone_book_data.iter() {
-            let entry1 = GridRow::new()
-                .push(Text::new(entry.0.clone() + "    "))
-                .push(text(entry.1.mobile.clone() + "    "))
-                .push(text(entry.1.work.clone()))
-                .push(row![
-                    button("Remove entry").on_press(Message::Remove(entry.0.clone())),
-                ]);
+            let mut entry1 = GridRow::new().push(Text::new(entry.0.clone() + "    "));
+            if self.is_modifying == true && self.name_to_be_modified == entry.0.clone() {
+                entry1 = entry1
+                    .push(
+                        text_input("", &(entry.1.mobile.clone() + "    "))
+                            .on_input(|_| Message::NoOp),
+                    )
+                    .push(
+                        text_input("", &(entry.1.work.clone() + "    "))
+                            .on_input(|_| Message::NoOp),
+                    );
+            } else {
+                entry1 = entry1
+                    .push(text(entry.1.mobile.clone() + "    "))
+                    .push(text(entry.1.work.clone()));
+            }
+
+            entry1 = entry1.push(row![
+                button("Modify entry").on_press(Message::Modify(entry.0.clone())),
+                button("Remove entry").on_press(Message::Remove(entry.0.clone())),
+            ]);
+
             phone_numbers_grid = phone_numbers_grid.push(entry1);
         }
 
