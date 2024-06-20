@@ -53,7 +53,8 @@ enum Message {
     Modify(String),
     Remove(String),
     SavePhonebook,
-    NoOp,
+    EditEntryPhoneNumber(String),
+    EditEntryWorkNumber(String),
 }
 
 impl Application for PhoneBook {
@@ -160,7 +161,6 @@ impl Application for PhoneBook {
                     self.new_entry_name.clear();
                     self.new_entry_phone_number.clear();
                     self.new_entry_work_number.clear();
-
                     self.error_state = String::new();
                 }
 
@@ -184,7 +184,24 @@ impl Application for PhoneBook {
                 Command::none()
             }
 
-            Message::NoOp => Command::none(),
+            Message::EditEntryPhoneNumber(phone_number) => {
+                let mutable_entry = self
+                    .phone_book_data
+                    .get_mut(&self.name_to_be_modified)
+                    .expect("Phone number must exist.");
+                mutable_entry.mobile = phone_number;
+                Command::none()
+            }
+
+            Message::EditEntryWorkNumber(work_number) => {
+                let mutable_entry = self
+                    .phone_book_data
+                    .get_mut(&self.name_to_be_modified)
+                    .expect("Work number must exist.");
+                mutable_entry.work = work_number;
+
+                Command::none()
+            }
         }
     }
 
@@ -204,13 +221,13 @@ impl Application for PhoneBook {
             if self.is_modifying == true && self.name_to_be_modified == entry.0.clone() {
                 entry1 = entry1
                     .push(
-                        text_input("", &(entry.1.mobile.clone() + "    "))
-                            .on_input(|_| Message::NoOp),
+                        text_input("", &entry.1.mobile)
+                            .on_input(|phone_number| Message::EditEntryPhoneNumber(phone_number)),
                     )
                     .push(
-                        text_input("", &(entry.1.work.clone() + "    "))
-                            .on_input(|_| Message::NoOp),
-                    );
+                        text_input("", &entry.1.work)
+                            .on_input(|work_number| Message::EditEntryWorkNumber(work_number)),
+                    )
             } else {
                 entry1 = entry1
                     .push(text(entry.1.mobile.clone() + "    "))
