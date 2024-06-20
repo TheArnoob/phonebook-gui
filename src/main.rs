@@ -188,7 +188,7 @@ impl Application for PhoneBook {
                 let mutable_entry = self
                     .phone_book_data
                     .get_mut(&self.name_to_be_modified)
-                    .expect("Phone number must exist.");
+                    .expect("Name must exist.");
                 mutable_entry.mobile = phone_number;
                 Command::none()
             }
@@ -197,7 +197,7 @@ impl Application for PhoneBook {
                 let mutable_entry = self
                     .phone_book_data
                     .get_mut(&self.name_to_be_modified)
-                    .expect("Work number must exist.");
+                    .expect("Name must exist.");
                 mutable_entry.work = work_number;
 
                 Command::none()
