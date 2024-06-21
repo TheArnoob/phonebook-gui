@@ -179,7 +179,7 @@ impl Application for PhoneBook {
             }
 
             Message::Modify(name) => {
-                self.is_modifying = true;
+                self.is_modifying = !self.is_modifying;
                 self.name_to_be_modified = name;
                 Command::none()
             }
@@ -228,16 +228,19 @@ impl Application for PhoneBook {
                         text_input("", &entry.1.work)
                             .on_input(|work_number| Message::EditEntryWorkNumber(work_number)),
                     )
+                    .push(row![
+                        button("Done modifying").on_press(Message::Modify(entry.0.clone())),
+                        button("Remove entry").on_press(Message::Remove(entry.0.clone())),
+                    ]);
             } else {
                 entry1 = entry1
                     .push(text(entry.1.mobile.clone() + "    "))
-                    .push(text(entry.1.work.clone()));
+                    .push(text(entry.1.work.clone()))
+                    .push(row![
+                        button("Modify entry").on_press(Message::Modify(entry.0.clone())),
+                        button("Remove entry").on_press(Message::Remove(entry.0.clone())),
+                    ]);
             }
-
-            entry1 = entry1.push(row![
-                button("Modify entry").on_press(Message::Modify(entry.0.clone())),
-                button("Remove entry").on_press(Message::Remove(entry.0.clone())),
-            ]);
 
             phone_numbers_grid = phone_numbers_grid.push(entry1);
         }
