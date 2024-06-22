@@ -23,6 +23,7 @@ struct PhoneBook {
     new_entry_name: String,
     new_entry_phone_number: String,
     new_entry_work_number: String,
+    filter: String,
 }
 
 impl Default for PhoneBook {
@@ -36,6 +37,7 @@ impl Default for PhoneBook {
             new_entry_name: String::new(),
             new_entry_phone_number: String::new(),
             new_entry_work_number: String::new(),
+            filter: String::new(),
         }
     }
 }
@@ -55,6 +57,7 @@ enum Message {
     SavePhonebook,
     EditEntryPhoneNumber(String),
     EditEntryWorkNumber(String),
+    Filter(String),
 }
 
 impl Application for PhoneBook {
@@ -71,7 +74,7 @@ impl Application for PhoneBook {
     }
 
     fn title(&self) -> String {
-        String::from("A phone book graphical user interface")
+        String::from("A phone book GUI")
     }
 
     fn update(&mut self, message: Self::Message) -> iced::Command<Self::Message> {
@@ -171,6 +174,7 @@ impl Application for PhoneBook {
 
                 Command::none()
             }
+
             Message::Remove(name) => {
                 self.phone_book_data
                     .remove_entry(&name)
@@ -202,11 +206,19 @@ impl Application for PhoneBook {
 
                 Command::none()
             }
+
+            Message::Filter(filter) => {
+                self.filter = filter.clone();
+                Command::none()
+            }
         }
     }
 
     fn view(&self) -> iced::Element<'_, Self::Message, Self::Theme, iced::Renderer> {
         let mut phone_numbers_grid = Grid::new();
+
+        let filter_text =
+            row![text_input("Filter", &self.filter).on_input(|filter| { Message::Filter(filter) })];
 
         let header = GridRow::new()
             .push(Text::new("Name  "))
@@ -242,7 +254,9 @@ impl Application for PhoneBook {
                     ]);
             }
 
-            phone_numbers_grid = phone_numbers_grid.push(entry1);
+            if entry.0.contains(&self.filter) {
+                phone_numbers_grid = phone_numbers_grid.push(entry1);
+            }
         }
 
         let c = Column::new();
@@ -273,6 +287,8 @@ impl Application for PhoneBook {
             c = c.push(row);
         }
         let c = c.push(error_state_field);
+
+        let c = c.push(filter_text);
 
         let c = c.push(phone_numbers_grid);
 
