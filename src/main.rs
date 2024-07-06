@@ -286,9 +286,11 @@ impl Application for PhoneBook {
         if self.is_adding == true {
             c = c.push(row);
         }
-        let c = c.push(error_state_field);
+        let mut c = c.push(error_state_field);
 
-        let c = c.push(filter_text);
+        if !self.phone_book_data.is_empty() {
+            c = c.push(filter_text);
+        }
 
         let c = c.push(phone_numbers_grid);
 
