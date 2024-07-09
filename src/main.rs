@@ -1,7 +1,11 @@
 use database::PhoneBookDB;
 use entry::PhoneEntry;
-use iced::widget::{button, row, text, text_input, Column, Text};
-use iced::{executor, Alignment, Application, Color, Command, Settings, Theme};
+use iced::keyboard::key;
+use iced::widget::{self, button, row, text, text_input, Column, Text};
+use iced::{
+    event, executor, keyboard, Alignment, Application, Color, Command, Event, Settings,
+    Subscription, Theme,
+};
 use iced_aw::{Grid, GridRow};
 use std::collections::BTreeMap;
 mod database;
@@ -58,6 +62,7 @@ enum Message {
     EditEntryPhoneNumber(String),
     EditEntryWorkNumber(String),
     Filter(String),
+    Event(Event),
 }
 
 impl Application for PhoneBook {
@@ -75,6 +80,10 @@ impl Application for PhoneBook {
 
     fn title(&self) -> String {
         String::from("A phone book GUI")
+    }
+
+    fn subscription(&self) -> Subscription<Self::Message> {
+        event::listen().map(Message::Event)
     }
 
     fn update(&mut self, message: Self::Message) -> iced::Command<Self::Message> {
@@ -211,6 +220,17 @@ impl Application for PhoneBook {
                 self.filter = filter.clone();
                 Command::none()
             }
+
+            Message::Event(Event::Keyboard(keyboard::Event::KeyPressed {
+                key: keyboard::Key::Named(key::Named::Tab),
+                modifiers,
+                ..
+            })) if modifiers.shift() => widget::focus_previous(),
+            Message::Event(Event::Keyboard(keyboard::Event::KeyPressed {
+                key: keyboard::Key::Named(key::Named::Tab),
+                ..
+            })) => widget::focus_next(),
+            Message::Event(_) => Command::none(),
         }
     }
 
