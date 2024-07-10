@@ -294,14 +294,7 @@ impl Application for PhoneBook {
         }
 
         let mut c = Column::new();
-        let buttons_row = row![
-            button("Save phone book").on_press(Message::SavePhonebook),
-            button("Load phone book").on_press(Message::LoadPhonebook),
-            button("Clear phone book").on_press(Message::OnClearPhonebookButton),
-            button("Add phone book entry").on_press(Message::AddRow)
-        ]
-        .padding(20)
-        .align_items(Alignment::Center);
+
         let row = row![
             text_input("Name", &self.new_entry_name)
                 .on_input(|name| Message::EditNewEntryName(name)),
@@ -316,10 +309,19 @@ impl Application for PhoneBook {
         .padding(20)
         .align_items(Alignment::Center);
 
-        if self.show_clear_confirmation == true {
+        let buttons_row = row![
+            button("Save phone book").on_press(Message::SavePhonebook),
+            button("Load phone book").on_press(Message::LoadPhonebook),
+            button("Clear phone book").on_press(Message::OnClearPhonebookButton),
+            button("Add phone book entry").on_press(Message::AddRow)
+        ]
+        .padding(20)
+        .align_items(Alignment::Center);
+
+        if self.show_clear_confirmation {
             let modal = container(
                 iced::widget::column![
-                    text("Are you sure you want to clear the phonebook?"),
+                    text("Are you sure you want to clear the phonebook?").size(24),
                     row![
                         button("Yes").on_press(Message::ClearPhonebook),
                         button("No").on_press(Message::HideClearConfirmation),
@@ -329,20 +331,19 @@ impl Application for PhoneBook {
             );
 
             c = c.push(modal);
+        } else {
+            c = c.push(buttons_row);
+            if !self.phone_book_data.is_empty() {
+                c = c.push(filter_text);
+            }
+            c = c.push(phone_numbers_grid);
         }
 
         let error_state_field = Text::new(&self.error_state).style(Color::from_rgb8(255, 0, 0));
-        let mut c = c.push(buttons_row);
-        if self.is_adding == true {
+        if self.is_adding {
             c = c.push(row);
         }
-        let mut c = c.push(error_state_field);
-
-        if !self.phone_book_data.is_empty() {
-            c = c.push(filter_text);
-        }
-
-        let c = c.push(phone_numbers_grid);
+        c = c.push(error_state_field);
 
         c.into()
     }
