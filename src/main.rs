@@ -1,7 +1,7 @@
 use database::PhoneBookDB;
 use entry::PhoneEntry;
 use iced::keyboard::key;
-use iced::widget::{self, button, row, text, text_input, Column, Text};
+use iced::widget::{self, button, container, row, text, text_input, Column, Text};
 use iced::{
     event, executor, keyboard, Alignment, Application, Color, Command, Event, Settings,
     Subscription, Theme,
@@ -28,6 +28,7 @@ struct PhoneBook {
     new_entry_phone_number: String,
     new_entry_work_number: String,
     filter: String,
+    show_clear_confirmation: bool,
 }
 
 impl Default for PhoneBook {
@@ -42,6 +43,7 @@ impl Default for PhoneBook {
             new_entry_phone_number: String::new(),
             new_entry_work_number: String::new(),
             filter: String::new(),
+            show_clear_confirmation: false,
         }
     }
 }
@@ -50,7 +52,7 @@ impl Default for PhoneBook {
 enum Message {
     AddRow,
     Cancel,
-    ClearPhonebook,
+    OnClearPhonebookButton,
     EditNewEntryName(String),
     EditNewEntryWorkNumber(String),
     EditNewEntryPhoneNumber(String),
@@ -63,6 +65,8 @@ enum Message {
     EditEntryWorkNumber(String),
     Filter(String),
     Event(Event),
+    ClearPhonebook,
+    HideClearConfirmation,
 }
 
 impl Application for PhoneBook {
@@ -129,8 +133,8 @@ impl Application for PhoneBook {
                 Command::none()
             }
 
-            Message::ClearPhonebook => {
-                self.phone_book_data.clear();
+            Message::OnClearPhonebookButton => {
+                self.show_clear_confirmation = true;
 
                 Command::none()
             }
@@ -138,6 +142,12 @@ impl Application for PhoneBook {
             Message::AddRow => {
                 self.is_adding = true;
 
+                Command::none()
+            }
+
+            Message::ClearPhonebook => {
+                self.phone_book_data.clear();
+                self.show_clear_confirmation = false;
                 Command::none()
             }
 
@@ -231,6 +241,10 @@ impl Application for PhoneBook {
                 ..
             })) => widget::focus_next(),
             Message::Event(_) => Command::none(),
+            Message::HideClearConfirmation => {
+                self.show_clear_confirmation = false;
+                Command::none()
+            }
         }
     }
 
@@ -279,11 +293,11 @@ impl Application for PhoneBook {
             }
         }
 
-        let c = Column::new();
+        let mut c = Column::new();
         let buttons_row = row![
             button("Save phone book").on_press(Message::SavePhonebook),
             button("Load phone book").on_press(Message::LoadPhonebook),
-            button("Clear phone book").on_press(Message::ClearPhonebook),
+            button("Clear phone book").on_press(Message::OnClearPhonebookButton),
             button("Add phone book entry").on_press(Message::AddRow)
         ]
         .padding(20)
@@ -301,6 +315,21 @@ impl Application for PhoneBook {
         ]
         .padding(20)
         .align_items(Alignment::Center);
+
+        if self.show_clear_confirmation == true {
+            let modal = container(
+                iced::widget::column![
+                    text("Are you sure you want to clear the phonebook?"),
+                    row![
+                        button("Yes").on_press(Message::ClearPhonebook),
+                        button("No").on_press(Message::HideClearConfirmation),
+                    ]
+                ]
+                .align_items(Alignment::Center),
+            );
+
+            c = c.push(modal);
+        }
 
         let error_state_field = Text::new(&self.error_state).style(Color::from_rgb8(255, 0, 0));
         let mut c = c.push(buttons_row);
